@@ -4,21 +4,24 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.RPMTool;
+
 @TeleOp(name="TestBench")
 public class TestBench extends LinearOpMode {
 
     //Declare OpMode members
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor motor1 = null;
-    private DcMotor motor2 = null;
-    private DcMotor motor3 = null;
-    private DcMotor motor4 = null;
+    private DcMotorEx motor1 = null;
+    private DcMotorEx motor2 = null;
+    private DcMotorEx motor3 = null;
+    private DcMotorEx motor4 = null;
     private DcMotorSimple simpleMotor1 = null;
     private DcMotorSimple simpleMotor2 = null;
     private Servo Servo;
@@ -30,23 +33,18 @@ public class TestBench extends LinearOpMode {
     private boolean slowDrive = false;
     private double servoPosition = 0.16;
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
+    RPMTool rpm = new RPMTool(motor1, 28);
+    //Gobilda 6000 rpm motor
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        motor1 = hardwareMap.get(DcMotor.class, "motor1");
-        motor2 = hardwareMap.get(DcMotor.class, "motor2");
-        motor3 = hardwareMap.get(DcMotor.class, "motor3");
-        motor4 = hardwareMap.get(DcMotor.class, "motor4");
+        motor1 = hardwareMap.get(DcMotorEx.class, "motor1");
+        motor2 = hardwareMap.get(DcMotorEx.class, "motor2");
+        motor3 = hardwareMap.get(DcMotorEx.class, "motor3");
+        motor4 = hardwareMap.get(DcMotorEx.class, "motor4");
         simpleMotor1 = hardwareMap.get(DcMotorSimple.class, "simpleMotor1");
         simpleMotor2 = hardwareMap.get(DcMotorSimple.class, "simpleMotor2");
         Servo = hardwareMap.servo.get("Servo");
