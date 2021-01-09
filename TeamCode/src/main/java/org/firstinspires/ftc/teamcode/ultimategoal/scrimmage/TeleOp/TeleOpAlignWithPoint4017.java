@@ -28,8 +28,8 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
  * want that to interfere with our graph so we just directly update localizer instead
  */
 @Config
-@TeleOp(group = "advanced")
-public class TeleOpAlignWithPoint extends LinearOpMode {
+@TeleOp
+public class TeleOpAlignWithPoint4017 extends LinearOpMode {
 
     public static double DRAWING_TARGET_RADIUS = 2;
 
@@ -148,6 +148,8 @@ public class TeleOpAlignWithPoint extends LinearOpMode {
                     fieldOverlay.strokeLine(targetPosition.getX(), poseEstimate.getY(), poseEstimate.getX(), poseEstimate.getY());
                     break;
             }
+
+            //Put stuff here
 
             // Draw bot on canvas
             fieldOverlay.setStroke("#3F51B5");

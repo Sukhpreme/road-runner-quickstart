@@ -37,7 +37,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.PoseStorage;
  * This sample utilizes the SampleMecanumDriveCancelable.java class.
  */
 @TeleOp(group = "advanced")
-public class TeleOpAugmentedDriving extends LinearOpMode {
+public class TeleOpAugmentedDriving4017 extends LinearOpMode {
     // Define 2 states, drive control or automatic control
     enum Mode {
         DRIVER_CONTROL,
