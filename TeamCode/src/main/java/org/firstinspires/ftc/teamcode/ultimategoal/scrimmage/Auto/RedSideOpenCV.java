@@ -6,12 +6,18 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.Hardware;
 import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.MecanumDriveCancelable;
 import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.PoseStorage;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.RPMTool;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -43,20 +49,39 @@ import org.openftc.easyopencv.OpenCvPipeline;
 @Autonomous(group = "advanced")
 public class RedSideOpenCV extends LinearOpMode {
 
+    Hardware robot           = new Hardware();   // Use our hardware
+
+    RPMTool launcher = new RPMTool(robot.launcher, 28);
+
+
+
     // This enum defines our "state"
     // This is essentially just defines the possible steps our program will take
     enum State {
+        TRAJECTORYA,
+        TRAJECTORYB,
+        TRAJECTORYC,
+        DETERMINESTACK,
+        WOBBLEGOALA,
+        WOBBLEGOALB,
+        WOBBLEGOALC,
         TRAJECTORY_1,   // First, follow a splineTo() trajectory
         TRAJECTORY_2,   // Then, follow a lineTo() trajectory
         TURN_1,         // Then we want to do a point turn
         TRAJECTORY_3,   // Then, we follow another lineTo() trajectory
         WAIT_1,         // Then we're gonna wait a second
         TURN_2,         // Finally, we're gonna turn again
-        IDLE            // Our bot will enter the IDLE state when done
+        IDLE // Our bot will enter the IDLE state when done
     }
 
     private OpenCvCamera webcam;
     StackDeterminationPipeline pipeline;
+
+    private Servo grabber;
+
+    public static final double highGoalRPM = 2500;
+    public static final double powershotRPM = 2375;
+
 
     // We define the current state we're on
     // Default to IDLE
@@ -66,6 +91,8 @@ public class RedSideOpenCV extends LinearOpMode {
     // This assumes we start at x: 15, y: 10, heading: 180 degrees
     Pose2d startPose = new Pose2d(15, 10, Math.toRadians(180));
 
+
+
     @Override
     public void runOpMode() throws InterruptedException {
         //Initialize computer vision
@@ -74,8 +101,9 @@ public class RedSideOpenCV extends LinearOpMode {
         pipeline = new StackDeterminationPipeline();
         webcam.setPipeline(pipeline);
 
-        // Initialize our lift
-        Lift lift = new Lift(hardwareMap);
+        // Initialize our hardware
+        robot.init(hardwareMap);
+
 
         // Initialize SampleMecanumDrive
         MecanumDriveCancelable drive = new MecanumDriveCancelable(hardwareMap);
@@ -86,6 +114,26 @@ public class RedSideOpenCV extends LinearOpMode {
         // Let's define our trajectories
         Trajectory trajectory1 = drive.trajectoryBuilder(startPose)
                 .splineTo(new Vector2d(45, -20), Math.toRadians(90))
+                .addDisplacementMarker(()->{
+                    launcher.setRPM(highGoalRPM);
+                    robot.trigger.setPosition(.8);
+                    robot.trigger.setPosition(.5);
+                    robot.trigger.setPosition(.8);
+                    robot.trigger.setPosition(.5);
+                    robot.trigger.setPosition(.8);
+                    robot.trigger.setPosition(.5);
+                    launcher.setRPM(0);
+                })
+                .build();
+        Trajectory trajectorya = drive.trajectoryBuilder(trajectory1.end())
+                .splineToConstantHeading(new Vector2d(-8,-36),Math.toRadians(0))
+                .addTemporalMarker(4, ()->{
+
+                    robot.intake.setPower(.8);
+                })
+                .addTemporalMarker(5.5, ()->{
+                    robot.intake.setPower(0);
+                })
                 .build();
 
         // Second trajectory
@@ -121,6 +169,19 @@ public class RedSideOpenCV extends LinearOpMode {
         // Then have it follow that trajectory
         // Make sure you use the async version of the commands
         // Otherwise it will be blocking and pause the program here until the trajectory finishes
+        //currentState = State.DETERMINESTACK
+        if (pipeline.position == StackDeterminationPipeline.RingPosition.NONE){
+            currentState = State.TRAJECTORYA;
+            //drive.followTrajectoryAsync(trajectorya);
+        }
+        else if (pipeline.position == StackDeterminationPipeline.RingPosition.ONE){
+            currentState = State.TRAJECTORYB;
+            //drive.followTrajectoryAsync(trajectoryb);
+        }
+        else {
+            currentState = State.TRAJECTORYC;
+            //drive.followTrajectoryAsync(trajectoryc);
+        }
         currentState = State.TRAJECTORY_1;
         drive.followTrajectoryAsync(trajectory1);
 
@@ -131,6 +192,11 @@ public class RedSideOpenCV extends LinearOpMode {
 
             // We essentially define the flow of the state machine through this switch statement
             switch (currentState) {
+                case TRAJECTORYA:
+                    if (!drive.isBusy()) {
+                        currentState = State.WOBBLEGOALA;
+                        drive.followTrajectoryAsync(trajectory2);
+                    }
                 case TRAJECTORY_1:
                     // Check if the drive class isn't busy
                     // `isBusy() == true` while it's following the trajectory
@@ -196,8 +262,6 @@ public class RedSideOpenCV extends LinearOpMode {
 
             // We update drive continuously in the background, regardless of state
             drive.update();
-            // We update our lift PID continuously in the background, regardless of state
-            lift.update();
 
             // Read pose
             Pose2d poseEstimate = drive.getPoseEstimate();
@@ -213,20 +277,6 @@ public class RedSideOpenCV extends LinearOpMode {
         }
     }
 
-    // Assume we have a hardware class called lift
-    // Lift uses a PID controller to maintain its height
-    // Thus, update() must be called in a loop
-    class Lift {
-        public Lift(HardwareMap hardwareMap) {
-            // Beep boop this is the the constructor for the lift
-            // Assume this sets up the lift hardware
-        }
-
-        public void update() {
-            // Beep boop this is the lift update function
-            // Assume this runs some PID controller for the lift
-        }
-    }
 
     //Robot needs to process the image to determine stack
     public static class StackDeterminationPipeline extends OpenCvPipeline
@@ -332,4 +382,58 @@ public class RedSideOpenCV extends LinearOpMode {
             return avg1;
         }
     }
+
+    public class Hardware {
+        private ElapsedTime runtime = new ElapsedTime();
+        private DcMotorEx launcher = null;
+        private DcMotorEx arm = null;
+        private DcMotorEx intake = null;
+        private Servo grabber;
+        private Servo trigger;
+
+
+        public static final double MID_SERVO       =  0.5 ;
+        public static final double highGoalRPM = 2500;
+        public static final double powershotRPM = 2375;
+
+
+
+        HardwareMap hwMap           =  null;
+
+        /* Constructor */
+        public Hardware() {
+        }
+
+
+
+        /* Initialize standard Hardware interfaces */
+        public void init(HardwareMap ahwMap) {
+            // Save reference to Hardware map
+            hwMap = ahwMap;
+            RPMTool rpm = new RPMTool(launcher, 28);
+            // Define and Initialize Motors
+            launcher  = hwMap.get(DcMotorEx.class, "left_drive");
+            intake = hwMap.get(DcMotorEx.class, "right_drive");
+            arm    = hwMap.get(DcMotorEx.class, "left_arm");
+            launcher.setDirection(DcMotor.Direction.FORWARD);
+            intake.setDirection(DcMotor.Direction.REVERSE);
+
+            // Set all motors to zero power
+            launcher.setPower(0);
+            intake.setPower(0);
+            arm.setPower(0);
+
+            // Set all motors to run without encoders.
+            // May want to use RUN_USING_ENCODERS if encoders are installed.
+            launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
+            // Define and initialize ALL installed servos.
+            trigger = hwMap.get(Servo.class, "trigger");
+            trigger.setPosition(MID_SERVO);
+            grabber  = hwMap.get(Servo.class, "grabber");
+            grabber.setPosition(MID_SERVO);
+        }
+    }
+
 }
