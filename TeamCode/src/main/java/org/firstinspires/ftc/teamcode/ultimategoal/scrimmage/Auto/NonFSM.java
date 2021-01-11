@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.Hardware;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.PoseStorage;
 import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.RPMTool;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -52,11 +53,7 @@ public class NonFSM extends LinearOpMode {
     public static final double GRABBER_CLOSED       =  0.8 ;
     public static final double TRIGGER_PRESSED       =  0.5 ;
     public static final double TRIGGER_UNPRESSED       =  0.8 ;
-
-
-
     private ElapsedTime runtime = new ElapsedTime();
-
 
     Hardware drive;
     private OpenCvCamera webcam;
@@ -186,8 +183,6 @@ public class NonFSM extends LinearOpMode {
             .lineToConstantHeading(new Vector2d(16,-36))
             .build();
 
-
-
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -230,6 +225,20 @@ public class NonFSM extends LinearOpMode {
 
                 }
             }
+            // We update drive continuously in the background, regardless of state
+            drive.update();
+
+            // Read pose
+            Pose2d poseEstimate = drive.getPoseEstimate();
+
+            // Continually write pose to `PoseStorage`
+            PoseStorage.currentPose = poseEstimate;
+
+            // Print pose to telemetry
+            telemetry.addData("x", poseEstimate.getX());
+            telemetry.addData("y", poseEstimate.getY());
+            telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.update();
         }
     }
 
@@ -257,9 +266,7 @@ public class NonFSM extends LinearOpMode {
         robot.intake.setPower(0);
     }
 
-
-    public static class StackDeterminationPipeline extends OpenCvPipeline
-    {
+    public static class StackDeterminationPipeline extends OpenCvPipeline {
         /*
          * An enum to define the ring position
          */
