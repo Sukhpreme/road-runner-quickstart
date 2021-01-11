@@ -43,6 +43,8 @@ public class NonAugmentedTeleOp extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Initialize SampleMecanumDrive
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        robot.init(hardwareMap);
+
 
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
@@ -71,11 +73,11 @@ public class NonAugmentedTeleOp extends LinearOpMode {
             Pose2d poseEstimate = drive.getPoseEstimate();
 
             //launcher speed control
-            if (gamepad1.a){
+            if (gamepad1.left_bumper){
                 launcher.setRPM(powershotRPM);
             }
 
-            if (gamepad1.b){
+            if (gamepad1.right_bumper){
                 launcher.setRPM(highGoalRPM);
             }
 
@@ -83,7 +85,7 @@ public class NonAugmentedTeleOp extends LinearOpMode {
                 launcher.setRPM(2480);
             }
 
-            if (gamepad1.x){
+            if (gamepad1.dpad_down){
                 robot.launcher.setPower(0);
             }
 
@@ -118,10 +120,12 @@ public class NonAugmentedTeleOp extends LinearOpMode {
             else {
                 //do nothing
             }
+            //Intake
             if (gamepad1.left_trigger > 0){
                 intake(.5);
             }
             else {
+                intake(0);
             }
 
 
