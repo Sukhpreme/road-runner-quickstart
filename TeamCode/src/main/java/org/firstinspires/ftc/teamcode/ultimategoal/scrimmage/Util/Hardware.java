@@ -31,10 +31,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
@@ -57,22 +55,11 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
 /*
- * Simple mecanum drive hardware implementation for REV hardware.
+ * This is a modified SampleMecanumDrive class that implements the ability to cancel a trajectory
+ * following. Essentially, it just forces the mode to IDLE.
  */
 @Config
 public class Hardware extends MecanumDrive {
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotorEx launcher = null;
-    private DcMotorEx arm = null;
-    private DcMotorEx intake = null;
-    private Servo grabber;
-    private Servo trigger;
-
-
-    public static final double MID_SERVO       =  0.5 ;
-    public static final double highGoalRPM = 2500;
-    public static final double powershotRPM = 2375;
-
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -112,7 +99,6 @@ public class Hardware extends MecanumDrive {
     private VoltageSensor batteryVoltageSensor;
 
     private Pose2d lastPoseOnTurn;
-    HardwareMap hwMap           =  null;
 
     public Hardware(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
@@ -182,30 +168,6 @@ public class Hardware extends MecanumDrive {
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
-
-        RPMTool rpm = new RPMTool(launcher, 28);
-        // Define and Initialize Motors
-        launcher  = hwMap.get(DcMotorEx.class, "left_drive");
-        intake = hwMap.get(DcMotorEx.class, "right_drive");
-        arm    = hwMap.get(DcMotorEx.class, "left_arm");
-        launcher.setDirection(DcMotor.Direction.FORWARD);
-        intake.setDirection(DcMotor.Direction.REVERSE);
-
-        // Set all motors to zero power
-        launcher.setPower(0);
-        intake.setPower(0);
-        arm.setPower(0);
-
-        // Set all motors to run without encoders.
-        // May want to use RUN_USING_ENCODERS if encoders are installed.
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-        // Define and initialize ALL installed servos.
-        trigger = hwMap.get(Servo.class, "trigger");
-        trigger.setPosition(MID_SERVO);
-        grabber  = hwMap.get(Servo.class, "grabber");
-        grabber.setPosition(MID_SERVO);
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -219,36 +181,6 @@ public class Hardware extends MecanumDrive {
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose, double startHeading) {
         return new TrajectoryBuilder(startPose, startHeading, velConstraint, accelConstraint);
     }
-
-    /* Initialize standard Hardware interfaces */
-    public void init(HardwareMap ahwMap) {
-        // Save reference to Hardware map
-        hwMap = ahwMap;
-        RPMTool rpm = new RPMTool(launcher, 28);
-        // Define and Initialize Motors
-        launcher  = hwMap.get(DcMotorEx.class, "left_drive");
-        intake = hwMap.get(DcMotorEx.class, "right_drive");
-        arm    = hwMap.get(DcMotorEx.class, "left_arm");
-        launcher.setDirection(DcMotor.Direction.FORWARD);
-        intake.setDirection(DcMotor.Direction.REVERSE);
-
-        // Set all motors to zero power
-        launcher.setPower(0);
-        intake.setPower(0);
-        arm.setPower(0);
-
-        // Set all motors to run without encoders.
-        // May want to use RUN_USING_ENCODERS if encoders are installed.
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-        // Define and initialize ALL installed servos.
-        trigger = hwMap.get(Servo.class, "trigger");
-        trigger.setPosition(MID_SERVO);
-        grabber  = hwMap.get(Servo.class, "grabber");
-        grabber.setPosition(MID_SERVO);
-    }
-
 
     public void turnAsync(double angle) {
         double heading = getPoseEstimate().getHeading();
@@ -279,6 +211,10 @@ public class Hardware extends MecanumDrive {
     public void followTrajectory(Trajectory trajectory) {
         followTrajectoryAsync(trajectory);
         waitForIdle();
+    }
+
+    public void cancelFollowing() {
+        mode = Mode.IDLE;
     }
 
     public Pose2d getLastError() {
