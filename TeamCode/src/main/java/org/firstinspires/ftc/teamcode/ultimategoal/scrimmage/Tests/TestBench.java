@@ -66,7 +66,7 @@ public class TestBench extends LinearOpMode {
             double mp3;
             double mp4;
             double smp1 = gamepad1.left_stick_x;
-            double smp2 = gamepad1.right_stick_x;
+            double smp2 = gamepad2.right_stick_y;
 
             if (gamepad1.y) {
                 if (!is1YPressed) {
@@ -77,9 +77,9 @@ public class TestBench extends LinearOpMode {
                 }
             }
 
-            if (gamepad1.left_trigger > 0) {                                                        //Capstone Servo Control
-                servoPosition = gamepad1.left_trigger;
-                servoPosition = Range.clip(servoPosition, .16, .75);
+            if (gamepad2.left_trigger > 0) {                                                        //Capstone Servo Control
+                servoPosition = gamepad2.left_trigger;
+//                servoPosition = Range.clip(servoPosition, .16, .75);
             } else {
                 servoPosition = 0.16;
             }
@@ -87,11 +87,11 @@ public class TestBench extends LinearOpMode {
             telemetry.addData("Servo pos: %s", Servo.getPosition());
             telemetry.update();
 
-            if (gamepad2.left_bumper) {
-                simpleMotor2.setPower(smp1);
+            if (gamepad2.right_stick_y > 0) {
+                simpleMotor2.setPower(smp2);
             }
-            else if (gamepad2.right_bumper) {
-                simpleMotor2.setPower(smp1);
+            else if (gamepad2.right_stick_y < 0) {
+                simpleMotor2.setPower(smp2);
             }
             else {
                 simpleMotor2.setPower(0);

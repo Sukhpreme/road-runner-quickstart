@@ -116,8 +116,6 @@ public class TeleOpAugmentedDriving4017 extends LinearOpMode {
                             )
                     );
 
-
-
                     if (gamepad1.a) {
                         // If the A button is pressed on gamepad1, we generate a splineTo()
                         // trajectory on the fly and follow it
@@ -206,6 +204,7 @@ public class TeleOpAugmentedDriving4017 extends LinearOpMode {
                     else {
                         intake(0);
                     }
+
                     break;
                 case AUTOMATIC_CONTROL:
                     // If x is pressed, we break out of the automatic following
@@ -260,6 +259,7 @@ public class TeleOpAugmentedDriving4017 extends LinearOpMode {
         public void init(HardwareMap ahwMap) {
             // Save reference to Hardware map
             hwMap = ahwMap;
+            RPMTool rpm = new RPMTool(launcher, 28);
             // Define and Initialize Motors
             launcher  = hwMap.get(DcMotorEx.class, "left_drive");
             intake = hwMap.get(DcMotorEx.class, "right_drive");
