@@ -13,9 +13,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.Hardware;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.PoseStorage;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.RPMTool;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.Hardware;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.PoseStorage;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.RPMTool;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;

@@ -11,9 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.MecanumDriveCancelable;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.PoseStorage;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.RPMTool;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.MecanumDriveCancelable;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.PoseStorage;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.RPMTool;
 
 /**
  * This opmode demonstrates how one can augment driver control by following Road Runner arbitrary

@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util;
+package org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 

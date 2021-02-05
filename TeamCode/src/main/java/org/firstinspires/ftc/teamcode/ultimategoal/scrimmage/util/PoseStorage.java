@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util;
+package org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util;
+package org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util;
 
 import androidx.annotation.NonNull;
 
@@ -29,11 +29,13 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.drive.advanced.SampleMecanumDriveCancelable;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
 
@@ -59,7 +61,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  * following. Essentially, it just forces the mode to IDLE.
  */
 @Config
-public class Hardware extends MecanumDrive {
+public class MecanumDriveCancelable extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -80,7 +82,7 @@ public class Hardware extends MecanumDrive {
     private FtcDashboard dashboard;
     private NanoClock clock;
 
-    private Mode mode;
+    private SampleMecanumDriveCancelable.Mode mode;
 
     private PIDFController turnController;
     private MotionProfile turnProfile;
@@ -100,7 +102,7 @@ public class Hardware extends MecanumDrive {
 
     private Pose2d lastPoseOnTurn;
 
-    public Hardware(HardwareMap hardwareMap) {
+    public MecanumDriveCancelable(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         dashboard = FtcDashboard.getInstance();
@@ -108,7 +110,7 @@ public class Hardware extends MecanumDrive {
 
         clock = NanoClock.system();
 
-        mode = Mode.IDLE;
+        mode = SampleMecanumDriveCancelable.Mode.IDLE;
 
         turnController = new PIDFController(HEADING_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
@@ -165,7 +167,10 @@ public class Hardware extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
-
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
     }
@@ -195,7 +200,7 @@ public class Hardware extends MecanumDrive {
         );
 
         turnStart = clock.seconds();
-        mode = Mode.TURN;
+        mode = SampleMecanumDriveCancelable.Mode.TURN;
     }
 
     public void turn(double angle) {
@@ -205,7 +210,7 @@ public class Hardware extends MecanumDrive {
 
     public void followTrajectoryAsync(Trajectory trajectory) {
         follower.followTrajectory(trajectory);
-        mode = Mode.FOLLOW_TRAJECTORY;
+        mode = SampleMecanumDriveCancelable.Mode.FOLLOW_TRAJECTORY;
     }
 
     public void followTrajectory(Trajectory trajectory) {
@@ -214,7 +219,7 @@ public class Hardware extends MecanumDrive {
     }
 
     public void cancelFollowing() {
-        mode = Mode.IDLE;
+        mode = SampleMecanumDriveCancelable.Mode.IDLE;
     }
 
     public Pose2d getLastError() {
@@ -248,11 +253,11 @@ public class Hardware extends MecanumDrive {
 
         packet.put("x", currentPose.getX());
         packet.put("y", currentPose.getY());
-        packet.put("heading", currentPose.getHeading());
+        packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
 
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
-        packet.put("headingError", lastError.getHeading());
+        packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
 
         switch (mode) {
             case IDLE:
@@ -281,14 +286,14 @@ public class Hardware extends MecanumDrive {
                 DashboardUtil.drawRobot(fieldOverlay, newPose);
 
                 if (t >= turnProfile.duration()) {
-                    mode = Mode.IDLE;
+                    mode = SampleMecanumDriveCancelable.Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }
 
                 break;
             }
             case FOLLOW_TRAJECTORY: {
-                setDriveSignal(follower.update(currentPose));
+                setDriveSignal(follower.update(currentPose, getPoseVelocity()));
 
                 Trajectory trajectory = follower.getTrajectory();
 
@@ -302,7 +307,7 @@ public class Hardware extends MecanumDrive {
                 DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
 
                 if (!follower.isFollowing()) {
-                    mode = Mode.IDLE;
+                    mode = SampleMecanumDriveCancelable.Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }
 
@@ -323,7 +328,7 @@ public class Hardware extends MecanumDrive {
     }
 
     public boolean isBusy() {
-        return mode != Mode.IDLE;
+        return mode != SampleMecanumDriveCancelable.Mode.IDLE;
     }
 
     public void setMode(DcMotor.RunMode runMode) {

@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.MecanumDriveCancelable;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.PoseStorage;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.MecanumDriveCancelable;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.PoseStorage;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 /**

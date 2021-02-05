@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.advanced.PoseStorage;
-import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.Util.RPMTool;
+import org.firstinspires.ftc.teamcode.ultimategoal.scrimmage.util.RPMTool;
 
 /**
  * This opmode demonstrates how to create a teleop using just the SampleMecanumDrive class without
