@@ -61,7 +61,7 @@ public class TeleOpAugmentedDriving4017 extends LinearOpMode {
     Mode currentMode = Mode.DRIVER_CONTROL;
 
     // The coordinates we want the bot to automatically go to when we press the A button
-    Vector2d targetAVector = new Vector2d(20, 30);
+    Vector2d targetAVector = new Vector2d(45, 45);
     // The heading we want the bot to end on for targetA
     double targetAHeading = Math.toRadians(90);
 
