@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.advanced;
 
 import androidx.annotation.NonNull;
 
@@ -55,10 +55,11 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
 /*
- * Simple mecanum drive hardware implementation for REV hardware.
+ * This is a modified SampleMecanumDrive class that implements the ability to cancel a trajectory
+ * following. Essentially, it just forces the mode to IDLE.
  */
 @Config
-public class SampleMecanumDrive extends MecanumDrive {
+public class SampleMecanumDriveCancelable extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -99,7 +100,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     private Pose2d lastPoseOnTurn;
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    public SampleMecanumDriveCancelable(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         dashboard = FtcDashboard.getInstance();
@@ -210,6 +211,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void followTrajectory(Trajectory trajectory) {
         followTrajectoryAsync(trajectory);
         waitForIdle();
+    }
+
+    public void cancelFollowing() {
+        mode = Mode.IDLE;
     }
 
     public Pose2d getLastError() {
